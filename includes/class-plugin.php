@@ -29,11 +29,14 @@ class Private_area {
         // 7) update meta box
         add_action('save_post', array($this,'private_area_save_userlist'));
         // 8) upload image for form
-        add_action('custom_form_upload', array($this, 'private_area_form_single'),0);
-        // 9) show document only in area-riservata-custom-page
-        add_action('loop_end',array($this,'private_area_get_document_user'),10);
-        // 10) check if it is private custom post type page
+        add_action('custom_form_upload', array($this, 'private_area_form_single'));
+        // 9) show document only in area-riservata-custom-page after the content
+        add_filter('the_content',array($this,'private_area_get_document_user'));
+        // 10) delete the attachment from the custom post page
+        add_action('wp', array($this,'private_area_delete_attachment'));
+        // 11) check if it is private custom post type page
         add_action('wp', array($this,'private_area_check_user_login'));
+        
         
     }
 
@@ -262,8 +265,10 @@ class Private_area {
                 // generate the metadata for that image and update it
                 $attach_data = wp_generate_attachment_metadata( $id, $file_name_and_location );
                 wp_update_attachment_metadata( $id, $attach_data );
-                $_FILES['uploadfile']['name'] = '';
                 
+                echo "<meta http-equiv='refresh' content='0'>";
+
+                return $_FILES['uploadfile']['name'] = '';
             else:
                 echo $uploaded_file['error'];
             endif;
@@ -278,7 +283,7 @@ class Private_area {
     //--------------------------------------------------------
 
     // show the document for specific pages and role
-    public function private_area_get_document_user(){
+    public function private_area_get_document_user($content){
         global $post;
         global $current_user; // Use global
         $my_user_level = $current_user->user_level;
@@ -286,8 +291,9 @@ class Private_area {
         $args = array(
             'post_type' => 'attachment',
             'post_status' => 'private',
+            // check what kind of file you want to upload
             'post_mime_type' => array( 'image/jpeg', 'image/png', 'application/pdf' ),
-            // questo valore permette di caricare tutte gli attachment dalla library
+            // every attachment from the media library will be shown
             'posts_per_page' => - 1,
         );
         $query_images = new \WP_Query( $args );
@@ -297,12 +303,12 @@ class Private_area {
                 // check if the author of the file is the current user
                 if ($image->post_author == $id_current_user || 10 == $my_user_level) {
                     //apply_filters( 'the_content', $content );
-                    $content = '<li><a target="_blank" href='.$image->guid.'>'.$image->post_title.'</a></li>
+                    $content .= '<li><a target="_self" href='.$image->guid.'>'.$image->post_title.'</a></li>
                     <form method="post"   enctype="multipart/form-data" >
                     <input type="hidden" name="name" value="'.$image->ID.'">
                     <input type="submit" name="submit" value="delete">
                     </form>';
-                    echo $content;
+                    
 
                     //$images[]= $image; --> wp_get_attachment_url()
                 }
@@ -314,26 +320,28 @@ class Private_area {
             }     
             
         }
+        return $content;
 
-        
-
-        if(isset($_POST['submit'])){
-                
-            wp_delete_attachment($_POST['name']);
-            echo "<meta http-equiv='refresh' content='0'>";      
-            
-        }
-        
-            //var_dump($images);
+        //var_dump($images);
     }
 
 
-
-    
+    //--------------------------------------------------------
+    // 10) delete attachment in the custom post page
+    //--------------------------------------------------------
+    public function private_area_delete_attachment(){
+        global $post;
+        if (is_single() && 'area-riservata' == $post->post_type) {
+            if (isset($_POST['submit'])) {
+                wp_delete_attachment($_POST['name']);
+                echo "<meta http-equiv='refresh' content='0'>";
+            }
+        }
+    }
 
 
     //--------------------------------------------------------
-    // 10) check if it is a private custom post page
+    // 11) check if it is a private custom post page
     //--------------------------------------------------------
     public function private_area_check_user_login(){
         global $post;
