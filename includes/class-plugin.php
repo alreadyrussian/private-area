@@ -12,7 +12,7 @@ class Private_area {
     private $versione;
 
     function __construct(){
-        // si scrivono gli hook in questa parte
+        // si scrivono gli hook in questa parte. Static class called without instantiation of the class
         $this->versione = Info::VERSIONE;
         // 1) save custom post type
         add_action('init', array($this,'private_area_crea_contenuti'));
