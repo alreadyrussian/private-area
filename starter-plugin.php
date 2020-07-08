@@ -17,33 +17,32 @@
 
 namespace private_area;
 
+if ( ! defined( 'WPINC' ) ) {
+	die;
+}
 
- if(!defined('WPINC')){
-    die;
- }
 
+ Define( 'PLUGIN_DIR', dirname( __FILE__ ) );
 
- Define('PLUGIN_DIR', dirname(__FILE__));
- 
 
 
 
 // hook that trigger functions when the plugin is activated
 // in questo modo il metodo può essere chiamato senza istanziare la classe
-register_activation_hook(__FILE__ , __NAMESPACE__ . '\activation');
-function activation(){
-   require_once PLUGIN_DIR. '/includes/class-activator.php';
-   Activator::attivazione();
+register_activation_hook( __FILE__, __NAMESPACE__ . '\activation' );
+function activation() {
+	require_once PLUGIN_DIR . '/includes/class-activator.php';
+	Activator::attivazione();
 }
 
 
 // hook that trigger functions when the plugin is deactivated
-register_deactivation_hook(__FILE__, __NAMESPACE__ .'\deactivation');
-function deactivation(){
-   require_once PLUGIN_DIR . '/includes/class-deactivator.php';
-   Deactivator::disattivazione();
+register_deactivation_hook( __FILE__, __NAMESPACE__ . '\deactivation' );
+function deactivation() {
+	require_once PLUGIN_DIR . '/includes/class-deactivator.php';
+	Deactivator::disattivazione();
 }
 
 
-require_once PLUGIN_DIR. '/includes/class-plugin.php';
-$starter = new Private_area(); 
+require_once PLUGIN_DIR . '/includes/class-plugin.php';
+$starter = new Private_area();

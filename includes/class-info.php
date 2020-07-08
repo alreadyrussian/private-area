@@ -2,7 +2,6 @@
 
 namespace private_area;
 
-
 class Info {
-    const VERSIONE = '1.0';
+	const VERSIONE = '1.0';
 }
